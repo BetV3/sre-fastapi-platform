@@ -1,0 +1,14 @@
+# Grafana Dashboards Provisioning
+apiVersion: 1
+
+providers:
+  - name: 'default'
+    orgId: 1
+    folder: 'FastAPI Platform'
+    folderUid: 'fastapi-platform'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards

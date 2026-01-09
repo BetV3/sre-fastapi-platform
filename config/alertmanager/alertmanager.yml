@@ -1,0 +1,84 @@
+# Alertmanager Configuration
+global:
+  # SMTP configuration for email notifications
+  # smtp_smarthost: 'smtp.gmail.com:587'
+  # smtp_from: 'alertmanager@example.com'
+  # smtp_auth_username: 'alertmanager@example.com'
+  # smtp_auth_password: 'password'
+  # smtp_require_tls: true
+
+  # Slack configuration
+  # slack_api_url: 'https://hooks.slack.com/services/xxx/xxx/xxx'
+
+  resolve_timeout: 5m
+
+# Templates for notifications
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Route tree
+route:
+  group_by: ['alertname', 'severity', 'job']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'default-receiver'
+
+  routes:
+    # Critical alerts
+    - match:
+        severity: critical
+      receiver: 'critical-receiver'
+      group_wait: 10s
+      repeat_interval: 1h
+
+    # Warning alerts
+    - match:
+        severity: warning
+      receiver: 'warning-receiver'
+      repeat_interval: 4h
+
+# Inhibition rules
+inhibit_rules:
+  # If a critical alert fires, inhibit warnings for the same alertname
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'job']
+
+# Receivers
+receivers:
+  - name: 'default-receiver'
+    # Webhook receiver (useful for integrations)
+    # webhook_configs:
+    #   - url: 'http://your-webhook-endpoint/alerts'
+    #     send_resolved: true
+
+  - name: 'critical-receiver'
+    # Email for critical alerts
+    # email_configs:
+    #   - to: 'oncall@example.com'
+    #     send_resolved: true
+    #     headers:
+    #       Subject: '[CRITICAL] {{ .GroupLabels.alertname }}'
+
+    # Slack for critical alerts
+    # slack_configs:
+    #   - channel: '#alerts-critical'
+    #     send_resolved: true
+    #     title: '{{ .Status | toUpper }} - {{ .GroupLabels.alertname }}'
+    #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+  - name: 'warning-receiver'
+    # Email for warning alerts
+    # email_configs:
+    #   - to: 'team@example.com'
+    #     send_resolved: true
+    #     headers:
+    #       Subject: '[WARNING] {{ .GroupLabels.alertname }}'
+
+    # Slack for warning alerts
+    # slack_configs:
+    #   - channel: '#alerts-warning'
+    #     send_resolved: true
